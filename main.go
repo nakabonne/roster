@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"flag"
 	"fmt"
 	"io/ioutil"
 	"log"
@@ -88,6 +89,7 @@ func saveToken(file string, token *oauth2.Token) {
 	defer f.Close()
 	json.NewEncoder(f).Encode(token)
 }
+
 func giveScope(config *oauth2.Config) {
 	cacheFile, err := tokenCacheFile()
 	if err != nil {
@@ -99,6 +101,11 @@ func giveScope(config *oauth2.Config) {
 }
 
 func main() {
+	var spreadsheetId = flag.String("i", "", "Set SpreadsheetID")
+	var cell = flag.String("c", "", "Set Cell")
+	var value = flag.String("v", "", "Set Value")
+	flag.Parse()
+
 	ctx := context.Background()
 
 	b, err := ioutil.ReadFile("client_secret.json")
@@ -106,33 +113,26 @@ func main() {
 		log.Fatalf("Unable to read client secret file: %v", err)
 	}
 
-	// If modifying these scopes, delete your previously saved credentials
-	// at ~/.credentials/sheets.googleapis.com-go-quickstart.json
 	config, err := google.ConfigFromJSON(b, "https://www.googleapis.com/auth/spreadsheets")
 	if err != nil {
 		log.Fatalf("Unable to parse client secret file to config: %v", err)
 	}
 
 	client := getClient(ctx, config)
-	//giveScope(config)j
 
 	srv, err := sheets.New(client)
 	if err != nil {
 		log.Fatalf("Unable to retrieve Sheets Client %v", err)
 	}
 
-	// Prints the names and majors of students in a sample spreadsheet:
-	// https://docs.google.com/spreadsheets/d/1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms/edit
-	spreadsheetId := "1p8MQTQs4pSo0XtbxgnF-fUyEd8GA8pkoBO9vxEScdRo"
-
-	range2 := ""
+	range2 := *cell
 	valueInputOption := "RAW"
 	rb := &sheets.ValueRange{
-		Range:  "A4",
-		Values: [][]interface{}{[]interface{}{"中尾", "典子"}},
+		Range:  *cell,
+		Values: [][]interface{}{[]interface{}{*value}},
 	}
 
-	resp, err := srv.Spreadsheets.Values.Update(spreadsheetId, range2, rb).ValueInputOption(valueInputOption).Context(ctx).Do()
+	resp, err := srv.Spreadsheets.Values.Update(*spreadsheetId, range2, rb).ValueInputOption(valueInputOption).Context(ctx).Do()
 	if err != nil {
 		log.Fatalf("update失敗 %v", err)
 	}
