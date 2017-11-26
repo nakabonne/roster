@@ -20,7 +20,6 @@ import (
 // getClient uses a Context and Config to retrieve a Token
 // then generate a Client. It returns the generated Client.
 func getClient(ctx context.Context, config *oauth2.Config) *http.Client {
-	fmt.Println("コンフィグ", config)
 	cacheFile, err := tokenCacheFile()
 	if err != nil {
 		log.Fatalf("Unable to get path to cached credential file. %v", err)
@@ -30,7 +29,6 @@ func getClient(ctx context.Context, config *oauth2.Config) *http.Client {
 		tok = getTokenFromWeb(config)
 		saveToken(cacheFile, tok)
 	}
-	fmt.Println(tok)
 	return config.Client(ctx, tok)
 }
 
@@ -110,23 +108,13 @@ func main() {
 
 	// If modifying these scopes, delete your previously saved credentials
 	// at ~/.credentials/sheets.googleapis.com-go-quickstart.json
-	/*config, err := google.ConfigFromJSON(b, "https://www.googleapis.com/auth/spreadsheets")
-	if err != nil {
-		log.Fatalf("Unable to parse client secret file to config: %v", err)
-	}
-	client := getClient(ctx, config)*/
 	config, err := google.ConfigFromJSON(b, "https://www.googleapis.com/auth/spreadsheets")
 	if err != nil {
 		log.Fatalf("Unable to parse client secret file to config: %v", err)
 	}
 
 	client := getClient(ctx, config)
-	/*	config, err := google.ConfigFromJSON(b, "https://www.googleapis.com/auth/drive.file")
-		if err != nil {
-			log.Fatalf("Unable to parse client secret file to config: %v", err)
-		}
-		client := getClient(ctx, config)*/
-	//giveScope(config)
+	//giveScope(config)j
 
 	srv, err := sheets.New(client)
 	if err != nil {
@@ -137,11 +125,11 @@ func main() {
 	// https://docs.google.com/spreadsheets/d/1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms/edit
 	spreadsheetId := "1p8MQTQs4pSo0XtbxgnF-fUyEd8GA8pkoBO9vxEScdRo"
 
-	range2 := "A1"
+	range2 := ""
 	valueInputOption := "RAW"
 	rb := &sheets.ValueRange{
-		Range:  "A1",
-		Values: [][]interface{}{[]interface{}{"中尾"}},
+		Range:  "A4",
+		Values: [][]interface{}{[]interface{}{"中尾", "典子"}},
 	}
 
 	resp, err := srv.Spreadsheets.Values.Update(spreadsheetId, range2, rb).ValueInputOption(valueInputOption).Context(ctx).Do()
