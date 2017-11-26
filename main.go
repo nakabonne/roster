@@ -20,6 +20,7 @@ import (
 // getClient uses a Context and Config to retrieve a Token
 // then generate a Client. It returns the generated Client.
 func getClient(ctx context.Context, config *oauth2.Config) *http.Client {
+	fmt.Println("コンフィグ", config)
 	cacheFile, err := tokenCacheFile()
 	if err != nil {
 		log.Fatalf("Unable to get path to cached credential file. %v", err)
@@ -29,6 +30,7 @@ func getClient(ctx context.Context, config *oauth2.Config) *http.Client {
 		tok = getTokenFromWeb(config)
 		saveToken(cacheFile, tok)
 	}
+	fmt.Println(tok)
 	return config.Client(ctx, tok)
 }
 
@@ -88,6 +90,15 @@ func saveToken(file string, token *oauth2.Token) {
 	defer f.Close()
 	json.NewEncoder(f).Encode(token)
 }
+func giveScope(config *oauth2.Config) {
+	cacheFile, err := tokenCacheFile()
+	if err != nil {
+		log.Fatalf("Unable to get path to cached credential file. %v", err)
+	}
+	tok := getTokenFromWeb(config)
+	saveToken(cacheFile, tok)
+
+}
 
 func main() {
 	ctx := context.Background()
@@ -99,11 +110,23 @@ func main() {
 
 	// If modifying these scopes, delete your previously saved credentials
 	// at ~/.credentials/sheets.googleapis.com-go-quickstart.json
-	config, err := google.ConfigFromJSON(b, "https://www.googleapis.com/auth/spreadsheets.readonly")
+	/*config, err := google.ConfigFromJSON(b, "https://www.googleapis.com/auth/spreadsheets")
 	if err != nil {
 		log.Fatalf("Unable to parse client secret file to config: %v", err)
 	}
+	client := getClient(ctx, config)*/
+	config, err := google.ConfigFromJSON(b, "https://www.googleapis.com/auth/spreadsheets")
+	if err != nil {
+		log.Fatalf("Unable to parse client secret file to config: %v", err)
+	}
+
 	client := getClient(ctx, config)
+	/*	config, err := google.ConfigFromJSON(b, "https://www.googleapis.com/auth/drive.file")
+		if err != nil {
+			log.Fatalf("Unable to parse client secret file to config: %v", err)
+		}
+		client := getClient(ctx, config)*/
+	giveScope(config)
 
 	srv, err := sheets.New(client)
 	if err != nil {
@@ -112,21 +135,15 @@ func main() {
 
 	// Prints the names and majors of students in a sample spreadsheet:
 	// https://docs.google.com/spreadsheets/d/1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms/edit
-	spreadsheetId := "1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms"
-	readRange := "Class Data!A2:E"
-	resp, err := srv.Spreadsheets.Values.Get(spreadsheetId, readRange).Do()
+	spreadsheetId := "1p8MQTQs4pSo0XtbxgnF-fUyEd8GA8pkoBO9vxEScdRo"
+
+	range2 := "A1"
+	valueInputOption := ""
+	rb := &sheets.ValueRange{}
+
+	resp, err := srv.Spreadsheets.Values.Update(spreadsheetId, range2, rb).ValueInputOption(valueInputOption).Context(ctx).Do()
 	if err != nil {
-		log.Fatalf("Unable to retrieve data from sheet. %v", err)
+		log.Fatalf("update失敗 %v", err)
 	}
-
-	if len(resp.Values) > 0 {
-		fmt.Println("Name, Major:")
-		for _, row := range resp.Values {
-			// Print columns A and E, which correspond to indices 0 and 4.
-			fmt.Printf("%s, %s\n", row[0], row[4])
-		}
-	} else {
-		fmt.Print("No data found.")
-	}
-
+	fmt.Println("レスポンスは", resp)
 }
