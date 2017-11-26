@@ -134,7 +134,7 @@ func main() {
 
 	resp, err := srv.Spreadsheets.Values.Update(*spreadsheetId, range2, rb).ValueInputOption(valueInputOption).Context(ctx).Do()
 	if err != nil {
-		log.Fatalf("update失敗 %v", err)
+		log.Fatalf("failed update %v", err)
 	}
-	fmt.Println("レスポンスは", resp)
+	fmt.Println("response is\n", resp)
 }
