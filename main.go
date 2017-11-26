@@ -126,7 +126,7 @@ func main() {
 			log.Fatalf("Unable to parse client secret file to config: %v", err)
 		}
 		client := getClient(ctx, config)*/
-	giveScope(config)
+	//giveScope(config)
 
 	srv, err := sheets.New(client)
 	if err != nil {
@@ -138,8 +138,11 @@ func main() {
 	spreadsheetId := "1p8MQTQs4pSo0XtbxgnF-fUyEd8GA8pkoBO9vxEScdRo"
 
 	range2 := "A1"
-	valueInputOption := ""
-	rb := &sheets.ValueRange{}
+	valueInputOption := "RAW"
+	rb := &sheets.ValueRange{
+		Range:  "A1",
+		Values: [][]interface{}{[]interface{}{"中尾"}},
+	}
 
 	resp, err := srv.Spreadsheets.Values.Update(spreadsheetId, range2, rb).ValueInputOption(valueInputOption).Context(ctx).Do()
 	if err != nil {
